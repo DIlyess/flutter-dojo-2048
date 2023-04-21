@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       title: '2048',
       home: Scaffold(
         backgroundColor: Colors.orangeAccent,
-        body: Board(),
+        body: SafeArea(child: Board()),
       ),
     );
   }
@@ -45,26 +45,44 @@ class _BoardState extends State<Board> {
     return list;
   }
 
+  //recursion with bug
+
+  // void addNewTile() {
+  //   var row = Random().nextInt(4);
+  //   var col = Random().nextInt(4);
+  //   if (board[row][col] == 0) {
+  //     setState(() {
+  //       var board2 = board;
+  //       board2[row][col] = (Random().nextInt(2) + 1) * 2;
+  //       board = board2;
+  //     });
+  //     //print("add new tile in row $row, col $col");
+  //   } else {
+  //     addNewTile();
+  //   }
+  // }
+
   void addNewTile() {
-    var row = Random().nextInt(4);
-    var col = Random().nextInt(4);
-    if (board[row][col] == 0) {
-      setState(() {
-        var board2 = board;
-        board2[row][col] = Random().nextInt(2) * 2;
-        board = board2;
-      });
-      //print("add new tile in row $row, col $col");
-    } else {
-      addNewTile();
+    var emptyTiles = [];
+    for (var row = 0; row < board.length; row++) {
+      for (var col = 0; col < board[0].length; col++) {
+        if (board[row][col] == 0) {
+          emptyTiles.add([row, col]);
+        }
+      }
+    }
+    if (emptyTiles.isNotEmpty) {
+      var randomTile = emptyTiles[Random().nextInt(emptyTiles.length)];
+      var row = randomTile[0];
+      var col = randomTile[1];
+      board[row][col] = (Random().nextInt(2) + 1) * 2;
     }
   }
 
   void gameUpdate() {
     if (!gameWin()) {
-      if (!gameOver()) {
-        addNewTile();
-      } else {
+      addNewTile();
+      if (gameOver()) {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -119,18 +137,26 @@ class _BoardState extends State<Board> {
   }
 
   bool gameOver() {
-    for (var row in board) {
-      for (var value in row) {
-        if (value == 0) {
+    for (var row = 0; row < board.length; row++) {
+      for (var col = 0; col < board[0].length; col++) {
+        if (board[row][col] == 0) {
+          return false;
+        }
+        // Check the tile to the right
+        if (col < board[0].length - 1 &&
+            board[row][col] == board[row][col + 1]) {
+          return false;
+        }
+        // Check the tile below
+        if (row < board.length - 1 && board[row][col] == board[row + 1][col]) {
           return false;
         }
       }
     }
-    return false;
+    return true;
   }
 
   void swipeRight() {
-    print("swipe right");
     setState(() {
       for (var row = 0; row < board.length; row++) {
         for (var col = board[row].length - 1; col > 0; col--) {
@@ -155,7 +181,6 @@ class _BoardState extends State<Board> {
   }
 
   void swipeLeft() {
-    print("swipe left");
     setState(() {
       for (var row = 0; row < board.length; row++) {
         for (var col = 0; col < board[row].length - 1; col++) {
@@ -180,7 +205,6 @@ class _BoardState extends State<Board> {
   }
 
   void swipeUp() {
-    print("swipe up");
     setState(() {
       for (var col = 0; col < board[0].length; col++) {
         for (var row = 0; row < board.length - 1; row++) {
@@ -205,7 +229,6 @@ class _BoardState extends State<Board> {
   }
 
   void swipeDown() {
-    print("swipe down");
     setState(() {
       for (var col = 0; col < board[0].length; col++) {
         for (var row = board.length - 1; row > 0; row--) {
@@ -232,33 +255,49 @@ class _BoardState extends State<Board> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    return SwipeDetector(
-      onSwipeRight: (_) => swipeRight(),
-      onSwipeLeft: (_) => swipeLeft(),
-      onSwipeUp: (_) => swipeUp(),
-      onSwipeDown: (_) => swipeDown(),
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: SizedBox(
-            width: screenWidth - 30,
-            height: screenWidth - 30,
-            child: Table(
-              children: board.map((row) {
-                return TableRow(
-                  children: row.map((value) {
-                    return Tile(value);
+    return Stack(
+      children: [
+        Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  board = newBoard();
+                });
+              },
+              child: Icon(Icons.restart_alt)),
+        ),
+        SwipeDetector(
+          onSwipeRight: (_) => swipeRight(),
+          onSwipeLeft: (_) => swipeLeft(),
+          onSwipeUp: (_) => swipeUp(),
+          onSwipeDown: (_) => swipeDown(),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SizedBox(
+                width: screenWidth - 30,
+                height: screenWidth - 30,
+                child: Table(
+                  children: board.map((row) {
+                    return TableRow(
+                      children: row.map((value) {
+                        return Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Tile(value));
+                      }).toList(),
+                    );
                   }).toList(),
-                );
-              }).toList(),
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

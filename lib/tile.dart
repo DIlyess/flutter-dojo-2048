@@ -39,24 +39,19 @@ class Tile extends StatelessWidget {
     return LayoutBuilder(builder: (context, constraints) {
       final width = constraints.maxWidth;
       return Container(
-        padding: const EdgeInsets.all(4),
         width: width,
         height: width,
-        child: Container(
-          alignment: Alignment.center,
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: getColor(value),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            value != 0 ? value.toString() : '',
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: getColor(value),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          value != 0 ? value.toString() : '',
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
       );
