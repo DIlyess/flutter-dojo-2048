@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       title: '2048',
       home: Scaffold(
         backgroundColor: Colors.orangeAccent,
-        body: SafeArea(child: Board()),
+        body: Board(),
       ),
     );
   }
@@ -45,7 +45,7 @@ class _BoardState extends State<Board> {
     return list;
   }
 
-  //recursion with bug
+  //recursion, but it has a bug
 
   // void addNewTile() {
   //   var row = Random().nextInt(4);
@@ -256,17 +256,27 @@ class _BoardState extends State<Board> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Stack(
+      alignment: Alignment.bottomCenter,
       children: [
-        Align(
-          alignment: Alignment.bottomRight,
-          child: FloatingActionButton(
-              onPressed: () {
-                setState(() {
+        Padding(
+            padding: const EdgeInsets.all(80),
+            child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(width: 5, color: Colors.white)),
+              child: MaterialButton(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                child: const Text("restart",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold)),
+                onPressed: () => setState(() {
                   board = newBoard();
-                });
-              },
-              child: Icon(Icons.restart_alt)),
-        ),
+                }),
+              ),
+            )),
         SwipeDetector(
           onSwipeRight: (_) => swipeRight(),
           onSwipeLeft: (_) => swipeLeft(),
